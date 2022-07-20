@@ -7,7 +7,8 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_auc_sco
     recall_score, accuracy_score, f1_score
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import KFold
-
+import logging
+logger = logging.getLogger()
 @dataclass
 class FitModel:
     '''
@@ -24,6 +25,7 @@ class FitModel:
 
     def __post_init__(self):
         
+        
         self.train_X, self.train_y = self.__under_sampling(self.train_df.copy())
 
         self.test_df = self.train_X.merge(self.fe_test_df,on='uuid',how='inner')
@@ -31,15 +33,15 @@ class FitModel:
         self.train_X.drop('uuid',axis=1,inplace=True)
         self.test_df.drop('uuid',axis=1,inplace=True)
 
-        print(f'Dist train_y target : \n {self.train_y.value_counts()}')
+        logger.debug(f'Dist train_y target : \n {self.train_y.value_counts()}')
         self.test_X = self.test_df.drop('target',axis=1)
         self.test_y = self.test_df['target']
-        print(f'Dist test_y target : \n {self.test_y.value_counts()}')
+        logger.debug(f'Dist test_y target : \n {self.test_y.value_counts()}')
 
-        print('train_X: ',self.train_X.shape)
-        print('train_y: ',self.train_y.shape)
-        print('test_X: ',self.test_X.shape)
-        print('test_y: ',self.test_y.shape)
+        logger.debug(f'train_X:  {self.train_X.shape}')
+        logger.debug(f'train_y:  {self.train_y.shape}')
+        logger.debug(f'test_X:  {self.test_X.shape}')
+        logger.debug(f'test_y:  {self.test_y.shape}')
                 
 
         #Vai mudar para aceitar varios estimadores mas agora vai sobreescrever o modelo
@@ -49,16 +51,16 @@ class FitModel:
             self.__kfold_cross_validation(est,k=5)
 
         self.__best_model()
-        print(f'Best model :{self.est.__name__}')
+        logger.info(f'Best model :{self.est.__name__}')
         self.__fit(self.est,X=self.train_X,y=self.train_y)
         eval_metric = self.evaluate_model(self.test_X,self.test_y)
-        print(f'Test sampling {self.eval_metric} : {round(eval_metric,3)}')
+        logger.info(f'Test sampling {self.eval_metric} : {round(eval_metric,3)}')
 
         self.make_table_reports()
     def make_table_reports(self):
         #print classification reports and confusion matrix
-        print(f'Classification report \n {classification_report(self.test_y, self.predict(self.test_X))}')
-        print(f'Confusion matrix \n {confusion_matrix(self.test_y, self.predict(self.test_X))}')
+        logger.info(f'Classification report \n {classification_report(self.test_y, self.predict(self.test_X))}')
+        logger.info(f'Confusion matrix \n {confusion_matrix(self.test_y, self.predict(self.test_X))}')
 
     def __kfold_cross_validation(self,estimator,k=5):
             results_metrics = []
@@ -69,7 +71,7 @@ class FitModel:
                 self.__fit(estimator,X=k_X,y=k_y)
                 results_metrics.append(round(self.evaluate_model(k_test_X,k_test_y),3))
             self.store_model_results[estimator.__name__] = results_metrics
-            print(f'{estimator} : Training sample metrics | {results_metrics} | mean: {round(np.mean(results_metrics),3)}')
+            logger.info(f'{estimator} : Training sample metrics | {results_metrics} | mean: {round(np.mean(results_metrics),3)}')
 
     def __best_model(self):
         '''
