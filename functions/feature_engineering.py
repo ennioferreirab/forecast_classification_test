@@ -21,7 +21,7 @@ class FeatureEngineering:
             '''
             Feature engineering for loans dataframe using historical data
             already_default: 0 if not defaulted, 1 if defaulted
-            sum_amoun: sum amount of all previous loans paid
+            median_amount_loan: median amount of all previous loans paid
             count_loans: number of previous loans paid
 
             :param df_l: loans dataframe
@@ -31,14 +31,14 @@ class FeatureEngineering:
             df_l['target'] = df_l['paid_days_interval'].apply(lambda x: 1 if x.days > self.days_to_default else 0)
 
             already_default = df_l.groupby('uuid').sum()['target'].apply(lambda x: 1 if x > 0 else 0)
-            sum_amount = df_l.query('target == 0').groupby('uuid').sum()['amount']
+            median_amount_loan = df_l.query('target == 0').groupby('uuid').median()['amount']
             count_loans = df_l.query('target == 0').groupby('uuid').count()['amount']
 
             out_df = pd.DataFrame(df_l.groupby('uuid').count().index)
             out_df = out_df.join(already_default,on='uuid',how='left')
-            out_df = out_df.join(sum_amount,on='uuid',how='left',rsuffix='_sum')
+            out_df = out_df.join(median_amount_loan,on='uuid',how='left',rsuffix='_sum')
             out_df = out_df.join(count_loans,on='uuid',how='left',rsuffix='_count')
-            out_df.columns = ['uuid','target','sum_amount','count_loans']
+            out_df.columns = ['uuid','target','median_amount_loan','count_loans']
             return out_df
         
     def __feature_eng_recharges(self,df_r: pd.DataFrame) -> pd.DataFrame:
