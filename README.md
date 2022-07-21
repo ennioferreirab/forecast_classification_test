@@ -9,8 +9,33 @@ Python and Miniconda/Anaconda installed https://docs.conda.io/en/latest/minicond
 # CLI to train model
 
     conda activate $ENV_NAME [default: conda activate juvo_test_envi]
-    python main.py help
     python main.py
+
+    Usage: main.py [OPTIONS]
+
+    Options:
+    -l, --loans TEXT                Path to loans dataset  [default: datasets/Br
+                                    azil_DS_loans_2019-11-10_2019-12-05.csv]
+    -lp, --loans_prev TEXT          Path to previous loans dataset  [default:
+                                    datasets/Brazil_DS_prev_loans.csv]
+    -r, --recharges TEXT            Path to recharges dataset  [default: dataset
+                                    s/Brazil_DS_recharges_2019-08-10_2019-12-05.
+                                    csv]
+    -m, --metric TEXT               Metric to evaluate the model. AUC[default] =
+                                    roc_auc, Recall = recall, F1=f1,
+                                    Accuracy=accuracy  [default: roc_auc]
+    -i, --inicial_date TEXT         Inicial date to train the model. Format:
+                                    YYYY-MM-DD  [default: 2019-01-01]
+    -f, --final_date TEXT           Final date to train the model. Format: YYYY-
+                                    MM-DD  [default: 2019-12-31]
+    --plot, --no-plot               Show plots. --no-plot to disable  [default:
+                                    True]
+    --install-completion [bash|zsh|fish|powershell|pwsh]
+                                    Install completion for the specified shell.
+    --show-completion [bash|zsh|fish|powershell|pwsh]
+                                    Show completion for the specified shell, to
+                                    copy it or customize the installation.
+    --help                          Show this message and exit.
 # Datasets
 You will find 3 csv files. The files were created from our database as of 2020 Feb 05.
 
