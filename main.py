@@ -76,8 +76,19 @@ def main(
         "--final_date",
         "-f",
         help="Final date to train the model. Format: YYYY-MM-DD"
-    )) -> None:
-
+    ),
+    plot:Optional[bool]=typer.Option(
+        True,
+        "--plot",
+        "--no-plot",
+        help="Show plots. --no-plot to disable"
+    ),
+    ) -> None:
+    if plot == '--plot':
+        plot = True
+    elif plot == '--no-plot':
+        plot = False
+        
     loans, recharges = load_dfs(
         path_loans,
         path_loans_prev,
@@ -92,7 +103,7 @@ def main(
                                                 RandomForestClassifier,
                                                 ],
     eval_metric=eval_metric,
-    inicial_date=inicial_date,days_to_default=60,limit_date=limit_date
+    inicial_date=inicial_date,days_to_default=60,limit_date=limit_date,plot=plot
     )
     joblib.dump(forecast.model.est,'model.pkl')
     return

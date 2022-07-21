@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 from typing import List
 from dataclasses import dataclass
+import matplotlib.pyplot as plt
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score, \
-    recall_score, accuracy_score, f1_score
+    recall_score, accuracy_score, f1_score, plot_confusion_matrix, roc_curve, auc
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import KFold
 import logging
@@ -21,6 +22,7 @@ class FitModel:
     fe_test_df: pd.DataFrame
     estimators_list: List
     eval_metric: str
+    plot:bool = True
 
 
     def __post_init__(self):
@@ -56,11 +58,40 @@ class FitModel:
         eval_metric = self.evaluate_model(self.test_X,self.test_y)
         logger.info(f'Test sampling {self.eval_metric} : {round(eval_metric,3)}')
 
-        self.make_table_reports()
-    def make_table_reports(self):
+        self.__make_table_plot_reports()
+    
+    def __plot_roc_curve(self):
+        y_score = self.est.predict_proba(self.test_X)[:,1]
+
+        # Compute ROC curve and ROC area for each class
+        fpr, tpr, _ = roc_curve(self.test_y, y_score)
+        roc_auc = auc(fpr, tpr)
+
+        # Compute micro-average ROC curve and ROC area
+        plt.figure()
+        lw = 2
+        plt.plot(
+        fpr, tpr, color='darkorange',
+        lw=lw,
+        label="ROC curve (area = %0.2f)" % roc_auc,
+        )
+        plt.plot([0, 1], [0, 1], color="navy", lw=lw, linestyle="--")
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title("Receiver operating characteristic example")
+        plt.legend(loc="lower right")
+        plt.show()
+
+    def __make_table_plot_reports(self):
         #print classification reports and confusion matrix
         logger.info(f'Classification report \n {classification_report(self.test_y, self.predict(self.test_X))}')
         logger.info(f'Confusion matrix \n {confusion_matrix(self.test_y, self.predict(self.test_X))}')
+        if self.plot:
+            plot_confusion_matrix(self.est, self.test_X, self.test_y,cmap='Blues')  
+            plt.show()
+            self.__plot_roc_curve()
 
     def __kfold_cross_validation(self,estimator,k=5):
             results_metrics = []

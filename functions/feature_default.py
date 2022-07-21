@@ -23,6 +23,7 @@ class ForecastDefault:
     limit_date: str = '2019-12-05'
     days_to_default: int = 60
     fill_na:bool = True
+    plot:bool = True
 
     def __post_init__(self):
         date_format = '%Y-%m-%d'
@@ -62,4 +63,4 @@ class ForecastDefault:
         if self.fill_na:
             self.train_df.fillna(0,inplace=True)
 
-        self.model = FitModel(self.train_df,fe.test_loans[['uuid','target']],self.estimators_list, self.eval_metric)
+        self.model = FitModel(self.train_df,fe.test_loans[['uuid','target']],self.estimators_list, self.eval_metric,self.plot)
